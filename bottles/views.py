@@ -913,7 +913,7 @@ def washing_cycle_view(request):
 # =================================================
 
 from django.template.loader import get_template
-from xhtml2pdf import pisa
+# from xhtml2pdf import pisa
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
@@ -931,7 +931,6 @@ from .reports import get_delivery_performance
 # =================================================
 # REPORT EXPORTS (PDF / EXCEL)
 # =================================================
-
 @login_required
 @role_required("ADMIN")
 def export_report_pdf(request):
@@ -943,15 +942,8 @@ def export_report_pdf(request):
     template = get_template("reports/main_report_pdf.html")
     html = template.render({"report": report, "month": month})
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename=delivery_report.pdf'
-
-    pdf = pisa.CreatePDF(html, dest=response)
-
-    if pdf.err:
-        return HttpResponse("Error generating PDF", status=500)
-
-    return response
+    # ❌ Disabled PDF generation (xhtml2pdf removed)
+    return HttpResponse("PDF generation temporarily disabled")
 
 
 @login_required
@@ -1106,16 +1098,8 @@ def export_user_pdf(request, user_id):
         "badge": badge,
     })
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename={user.username}_report.pdf'
-
-    pdf = pisa.CreatePDF(html, dest=response)
-
-    if pdf.err:
-        return HttpResponse("Error generating PDF", status=500)
-
-    return response
-
+    # ❌ Disabled PDF generation (xhtml2pdf removed)
+    return HttpResponse("PDF generation temporarily disabled")
 
 
 
