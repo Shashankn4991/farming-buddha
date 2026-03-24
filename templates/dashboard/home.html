@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>Bottle Tracking Dashboard</h1>
+</div>
+
+{% if is_closed %}
+<div class="status-closed">
+    🔒 Day Closed
+</div>
+{% endif %}
+
+{% if alerts %}
+<div class="alert-box">
+    <h3>⚠ Today's Alerts ({{ alerts|length }})</h3>
+
+    <ul>
+        {% for alert in alerts %}
+            <li>{{ alert }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'bottles:alert_history' %}" class="btn-danger">
+        View All Alerts
+    </a>
+</div>
+{% endif %}
+
+<!-- ================= TODAY ACTIVITY ================= -->
+<h2 class="section-title">Today's Activity</h2>
+
+<div class="card-grid">
+    {% for bottle, data in today_summary.items %}
+    <div class="card">
+        <h3>{{ bottle }}</h3>
+
+        <p>Sent from Farm: {{ data.prepared_sent }}</p>
+        <p>Received at Warehouse: {{ data.warehouse_received }}</p>
+        <p>Empty Collected: {{ data.empty_collected }}</p>
+        <p>Empty Sent to Farm: {{ data.empty_received_farm }}</p>
+        <p>Sent to Wash: {{ data.sent_to_wash }}</p>
+        <p>Ready After Wash: {{ data.collected_after_wash }}</p>
+    </div>
+    {% empty %}
+        <p>No activity today</p>
+    {% endfor %}
+</div>
+
+<!-- ================= STOCK SUMMARY ================= -->
+<h2 class="section-title">Stock Summary</h2>
+
+<div class="card-grid">
+    {% for bottle, data in stock_summary.items %}
+    <div class="card">
+        <h3>{{ bottle }}</h3>
+
+        <p>Farm Stock: {{ data.farm_stock }}</p>
+        <p>Warehouse Stock: {{ data.warehouse_stock }}</p>
+        <p>Customer Stock: {{ data.customer_stock }}</p>
+        <p>Breakage: {{ data.breakage }}</p>
+    </div>
+    {% empty %}
+        <p>No stock data available</p>
+    {% endfor %}
+</div>
+
+<!-- ================= ROUTE OUTSTANDING ================= -->
+<h2 class="section-title">Route Outstanding Summary</h2>
+
+<div class="card-grid small">
+    {% for route in route_outstanding %}
+    <div class="card">
+
+        <h3>
+            {{ route.delivery_user.first_name|default:route.delivery_user.username }}
+        </h3>
+
+        <p style="color:#6b7280; font-size:12px; margin-bottom:8px;">
+            {{ route.delivery_user.route_name }}
+        </p>
+
+        <p>Total Delivered: {{ route.delivered }}</p>
+        <p>Total Collected: {{ route.collected }}</p>
+        <p>Breakage: {{ route.breakage }}</p>
+
+        <hr>
+
+        {% if route.outstanding > 0 %}
+            <p class="danger">
+                Outstanding: {{ route.outstanding }} ⚠
+            </p>
+        {% else %}
+            <p class="success">
+                Outstanding: {{ route.outstanding }}
+            </p>
+        {% endif %}
+
+    </div>
+    {% empty %}
+        <p>No route data available</p>
+    {% endfor %}
+</div>
+
+<!-- ================= ADMIN CONTROLS ================= -->
+{% if request.user.is_superuser %}
+<div class="admin-controls">
+
+    {% if is_closed %}
+    <a href="{% url 'bottles:admin_reopen_day' %}" class="btn-warning">
+        🔓 Reopen Today
+    </a>
+    {% else %}
+    <a href="{% url 'bottles:admin_close_day' %}" class="btn-danger">
+        🔒 Close Today
+    </a>
+    {% endif %}
+
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="form-page">
+
+    <!-- Header -->
+    <div class="form-header">
+        <h2>🚚 Create Delivery Assignment</h2>
+    </div>
+
+    <!-- Form -->
+    <form method="post" id="assignmentForm">
+        {% csrf_token %}
+
+        <!-- Top Fields -->
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="date" required>
+            </div>
+
+            <div class="form-group">
+                <label>Delivery User</label>
+                <select name="delivery_user" required>
+                    {% for user in delivery_users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+
+        <!-- Bottle Assignment -->
+        <div class="card assignment-card">
+
+            <h3 class="section-title">Bottle Assignment</h3>
+
+            <div class="table-container">
+                <table class="report-table">
+
+                    <thead>
+                        <tr>
+                            <th>Bottle Type</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for bottle in bottle_types %}
+                        <tr>
+                            <td>{{ bottle.name }}</td>
+                            <td>
+                                <input type="number"
+                                       name="qty_{{ bottle.id }}"
+                                       value="0"
+                                       min="0"
+                                       class="input-number qty-input">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+            <!-- Total -->
+            <div class="total-box">
+                Total Assigned: <span id="totalQty">0</span>
+            </div>
+
+            <!-- Error -->
+            <div id="errorBox" class="error-box hidden">
+                Invalid quantity detected
+            </div>
+
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" id="submitBtn" class="btn-submit">
+            Save Assignment
+        </button>
+
+    </form>
+
+</div>
+
+<!-- JS -->
+<script>
+const inputs = document.querySelectorAll(".qty-input");
+const totalDisplay = document.getElementById("totalQty");
+const errorBox = document.getElementById("errorBox");
+const submitBtn = document.getElementById("submitBtn");
+
+function updateTotals() {
+    let total = 0;
+    let hasError = false;
+
+    inputs.forEach(input => {
+        let val = parseInt(input.value) || 0;
+
+        if (val < 0) {
+            hasError = true;
+            input.style.borderColor = "red";
+        } else {
+            input.style.borderColor = "#d1d5db";
+        }
+
+        total += val;
+    });
+
+    totalDisplay.innerText = total;
+
+    if (hasError) {
+        errorBox.classList.remove("hidden");
+        submitBtn.disabled = true;
+    } else {
+        errorBox.classList.add("hidden");
+        submitBtn.disabled = false;
+    }
+}
+
+inputs.forEach(input => {
+    input.addEventListener("input", updateTotals);
+});
+
+updateTotals();
+</script>
+
+{% endblock %}

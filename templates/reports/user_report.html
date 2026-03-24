@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="report-container">
+
+    <!-- Header -->
+    <div class="report-header">
+    
+    <div class="header-left">
+        <h2>👤 {{ user.first_name|default:user.username }} Performance Report</h2>
+    </div>
+
+    <div class="header-right">
+        <a href="{% url 'bottles:export_user_pdf' user.id %}" class="btn btn-danger">
+            📄 PDF
+        </a>
+        <a href="{% url 'bottles:export_user_excel' user.id %}" class="btn btn-success">
+            📊 Excel
+        </a>
+</div>
+</div>
+
+
+
+    <!-- Summary -->
+    <div class="card summary-card">
+        <div class="summary-grid">
+            <div class="metric">
+                <span>Delivered</span>
+                <strong>{{ delivered }}</strong>
+            </div>
+            <div class="metric">
+                <span>Collected</span>
+                <strong>{{ collected }}</strong>
+            </div>
+            <div class="metric">
+                <span>Breakage</span>
+                <strong>{{ breakage }}</strong>
+            </div>
+            <div class="metric">
+                <span>Score</span>
+                <strong>{{ score }}</strong>
+            </div>
+        </div>
+
+        <div class="performance-badge">
+            {% if badge == "Excellent" %}
+                <span class="badge excellent">🟢 Excellent</span>
+            {% elif badge == "Average" %}
+                <span class="badge average">🟡 Average</span>
+            {% else %}
+                <span class="badge poor">🔴 Needs Attention</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card chart-card">
+        <canvas id="userChart"></canvas>
+    </div>
+
+    {{ labels|json_script:"user-labels" }}
+    {{ values|json_script:"user-values" }}
+
+    <!-- Table -->
+    <div class="card table-card">
+        <div class="table-container">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Bottle Type</th>
+                        <th>Delivered</th>
+                        <th>Collected</th>
+                        <th>Breakage</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item.entry.assignment.date }}</td>
+                        <td>{{ item.bottle_type.name }}</td>
+                        <td>{{ item.delivered }}</td>
+                        <td>{{ item.collected }}</td>
+                        <td>{{ item.breakage }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="empty-row">
+                            No data available
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const labels = JSON.parse(document.getElementById('user-labels').textContent);
+const values = JSON.parse(document.getElementById('user-values').textContent);
+
+new Chart(document.getElementById('userChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [
+    {
+        label: 'Delivered',
+        data: [values[0]]
+    },
+    {
+        label: 'Collected',
+        data: [values[1]]
+    },
+    {
+        label: 'Breakage',
+        data: [values[2]]
+    }
+]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    precision: 0
+                },
+                suggestedMax: Math.max(...values) + 10
+            }
+        }
+    }
+});
+</script>
+
+<!-- STYLES -->
+<style>
+
+.report-container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 20px;
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-left h2 {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.header-right {
+    display: flex;
+    gap: 10px;
+}
+
+/* Buttons */
+.btn {
+    padding: 8px 14px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: white;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s;
+}
+
+.btn-danger {
+    background: #dc2626;
+}
+
+.btn-success {
+    background: #16a34a;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+/* Cards */
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+/* Summary */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.metric {
+    text-align: center;
+}
+
+.metric span {
+    font-size: 13px;
+    color: gray;
+}
+
+.metric strong {
+    font-size: 20px;
+}
+
+/* Badge */
+.performance-badge {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.badge.excellent { color: #16a34a; }
+.badge.average { color: #ca8a04; }
+.badge.poor { color: #dc2626; }
+
+/* Chart */
+.chart-card {
+    height: 300px;
+}
+
+/* Table */
+.table-container {
+    overflow-x: auto;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.report-table th {
+    background: #334155;
+    color: white;
+    padding: 10px;
+}
+
+.report-table td {
+    padding: 10px;
+    text-align: center;
+}
+
+.empty-row {
+    text-align: center;
+    color: gray;
+}
+
+@media (max-width: 768px) {
+
+    .summary-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .report-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .header-right {
+        width: 100%;
+        display: flex;
+        gap: 10px;
+    }
+
+    .header-right .btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .chart-card {
+        height: 250px;
+    }
+
+    .report-table th,
+    .report-table td {
+        font-size: 12px;
+        padding: 8px;
+    }
+}
+
+</style>
+
+{% endblock %}

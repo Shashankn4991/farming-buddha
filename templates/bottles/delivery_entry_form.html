@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="form-page">
+
+    <!-- Header -->
+    <div class="form-header">
+        <h2>🚚 My Delivery Entry</h2>
+    </div>
+
+    <form method="post" id="deliveryForm">
+        {% csrf_token %}
+
+        <div class="card assignment-card">
+
+            <div class="table-container">
+                <table class="report-table">
+
+                    <thead>
+                        <tr>
+                            <th>Bottle</th>
+                            <th>Delivered</th>
+                            <th>Collected</th>
+                            <th>Breakage</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in bottle_items %}
+                        <tr>
+
+                            <!-- Bottle Name -->
+<td data-outstanding="{{ item.outstanding }}">
+    {{ item.bottle_type.name }}
+    <br>
+    <small style="color: gray;">
+        Outstanding: {{ item.outstanding }}
+    </small>
+</td>
+                            <!-- Delivered -->
+                            <td>
+                                <input type="number"
+                                       name="delivered"
+                                       value="{{ item.quantity_assigned }}"
+                                       min="0"
+                                       class="input-number delivered">
+                            </td>
+
+                            <!-- Collected -->
+                            <td>
+                                <input type="number"
+                                       name="collected"
+                                       value="0"
+                                       min="0"
+                                       class="input-number collected">
+                            </td>
+
+                            <!-- Breakage -->
+                            <td>
+                                <input type="number"
+                                       name="breakage"
+                                       value="0"
+                                       min="0"
+                                       class="input-number breakage">
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+            <!-- Summary -->
+            <div class="summary-box">
+                Total Delivered: <span id="totalDelivered">0</span> |
+                Total Collected: <span id="totalCollected">0</span> |
+                Total Breakage: <span id="totalBreakage">0</span>
+            </div>
+
+            <!-- Error -->
+            <div id="errorBox" class="error-box hidden">
+                Collected + Breakage cannot exceed Delivered
+            </div>
+
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" id="submitBtn" class="btn-submit">
+            Submit Delivery Entry
+        </button>
+
+    </form>
+
+</div>
+
+<!-- JS -->
+<script>
+const rows = document.querySelectorAll("tbody tr");
+const errorBox = document.getElementById("errorBox");
+const submitBtn = document.getElementById("submitBtn");
+
+function updateValidation() {
+    let hasError = false;
+
+    let totalDelivered = 0;
+    let totalCollected = 0;
+    let totalBreakage = 0;
+
+    rows.forEach(row => {
+
+        const deliveredInput = row.querySelector(".delivered");
+        const collectedInput = row.querySelector(".collected");
+        const breakageInput = row.querySelector(".breakage");
+
+        const delivered = parseInt(deliveredInput.value) || 0;
+        let collected = parseInt(collectedInput.value) || 0;
+        const breakage = parseInt(breakageInput.value) || 0;
+
+        const outstanding = parseInt(row.querySelector("td").dataset.outstanding) || 0;
+
+        totalDelivered += delivered;
+        totalCollected += collected;
+        totalBreakage += breakage;
+
+        // 🔥 AUTO LIMIT COLLECTION
+        if (collected > outstanding && outstanding > 0) {
+            collected = outstanding;
+            collectedInput.value = outstanding;
+        }
+
+        // Highlight row if needed
+        if (collected > outstanding && outstanding > 0) {
+            hasError = true;
+            row.style.background = "#fee2e2";
+        } else {
+            row.style.background = "";
+        }
+    });
+
+    document.getElementById("totalDelivered").innerText = totalDelivered;
+    document.getElementById("totalCollected").innerText = totalCollected;
+    document.getElementById("totalBreakage").innerText = totalBreakage;
+
+    if (hasError) {
+        errorBox.classList.remove("hidden");
+        submitBtn.disabled = true;
+    } else {
+        errorBox.classList.add("hidden");
+        submitBtn.disabled = false;
+    }
+}
+
+// Attach event listeners
+document.querySelectorAll("input").forEach(input => {
+    input.addEventListener("input", updateValidation);
+});
+
+// Initial calculation
+updateValidation();
+</script>
+
+{% endblock %}

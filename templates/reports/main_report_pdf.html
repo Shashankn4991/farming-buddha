@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+    font-family: Arial;
+    padding: 20px;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 12px;
+    color: gray;
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #334155;
+    color: white;
+    padding: 10px;
+    font-size: 12px;
+}
+
+td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    font-size: 11px;
+}
+
+.rank {
+    font-weight: bold;
+}
+
+.good {
+    color: green;
+}
+
+.bad {
+    color: red;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Delivery Performance Report</h2>
+
+{% if month %}
+<div class="subtitle">Month: {{ month }}</div>
+{% endif %}
+
+<table>
+    <tr>
+        <th>#</th>
+        <th>User</th>
+        <th>Delivered</th>
+        <th>Collected</th>
+        <th>Breakage</th>
+        <th>Score</th>
+    </tr>
+
+    {% for item in report %}
+    <tr>
+        <td class="rank">{{ forloop.counter }}</td>
+        <td>{{ item.user.username }}</td>
+        <td>{{ item.delivered }}</td>
+        <td>{{ item.collected }}</td>
+        <td>{{ item.breakage }}</td>
+        <td>
+            {% if item.score > 0 %}
+                <span class="good">{{ item.score }}</span>
+            {% else %}
+                <span class="bad">{{ item.score }}</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6">No data available</td>
+    </tr>
+    {% endfor %}
+
+</table>
+
+</body>
+</html>

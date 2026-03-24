@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="empty-page">
+
+    <div class="empty-card">
+
+        <!-- Icon -->
+        <div class="empty-icon">
+            📦
+        </div>
+
+        <!-- Title -->
+        <h2>No Delivery Assignment Today</h2>
+
+        <!-- Message -->
+        <p>
+            You do not have any assigned delivery for today.
+            Please contact your warehouse supervisor if this looks incorrect.
+        </p>
+
+        <!-- Role-based Action -->
+        {% if request.user.role == "ADMIN" or request.user.role == "SUPERVISOR" %}
+            <a href="{% url 'dashboard:home' %}" class="btn-primary empty-btn">
+                Go to Dashboard
+            </a>
+        {% else %}
+            <a href="{% url 'bottles:delivery_entry' %}" class="btn-primary empty-btn">
+                Back to Delivery
+            </a>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

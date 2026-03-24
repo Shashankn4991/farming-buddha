@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="alert-page">
+
+    <!-- Header -->
+    <div class="alert-header">
+        <h2>⚠ Alerts History</h2>
+    </div>
+
+    {% if alerts %}
+
+        <div class="alert-list">
+
+            {% for alert in alerts %}
+            <div class="alert-card">
+
+                {% if alert.date %}
+                <div class="alert-date">
+                    {{ alert.date }}
+                </div>
+                {% endif %}
+
+                <div class="alert-message">
+                    {{ alert }}
+                </div>
+
+            </div>
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-alert">
+            No alerts available.
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,47 @@
+/* ===== GLOBAL ===== */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f4f6f9;
+}
+
+/* Container (optional reuse) */
+.container {
+    padding: 30px;
+}
+
+/* ===== BUTTONS ===== */
+.btn-report {
+    display: inline-block;
+    padding: 11px 20px;
+    background: #2c3e50;
+    color: white;
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+}
+
+.btn-report:hover {
+    background: #34495e;
+}
+
+/* ===== TEXT COLORS ===== */
+.danger {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.success {
+    color: #16a34a;
+    font-weight: 700;
+}
+
+/* ===== MOBILE BASE IMPROVEMENTS ===== */
+@media (max-width: 480px) {
+
+    .container {
+        padding: 20px 15px;
+    }
+
+}

@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+.chart-card {
+    height: 350px;
+    position: relative;
+}
+</style>
+
+<div class="top-section">
+
+    <h2 class="page-title">📊 Delivery Performance Reports</h2>
+
+    {% if top_performer %}
+    <div class="card top-performer">
+        <h3>🥇 Top Performer</h3>
+        <p class="top-user">{{ top_performer.user.username }}</p>
+        <p>Score: {{ top_performer.score }}</p>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Filter -->
+<form method="get" class="filter-bar">
+    <select name="month" class="input-select">
+        <option value="">All Months</option>
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+    </select>
+
+    <button type="submit" class="btn-primary">
+        Filter
+    </button>
+</form>
+
+<!-- Chart -->
+<div class="card chart-card">
+    <canvas id="deliveryChart"></canvas>
+</div>
+
+<!-- JSON Data -->
+{{ labels|default:"[]"|json_script:"labels-data" }}
+{{ delivered_data|default:"[]"|json_script:"delivered-data" }}
+{{ collected_data|default:"[]"|json_script:"collected-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const labelsEl = document.getElementById('labels-data');
+    const deliveredEl = document.getElementById('delivered-data');
+    const collectedEl = document.getElementById('collected-data');
+
+    // 🛑 Safety check
+    if (!labelsEl || !deliveredEl || !collectedEl) {
+        console.error("Chart data not found");
+        return;
+    }
+
+    let labels = JSON.parse(labelsEl.textContent || "[]");
+    let delivered = JSON.parse(deliveredEl.textContent || "[]");
+    let collected = JSON.parse(collectedEl.textContent || "[]");
+
+    // 🔥 Force numeric
+    delivered = delivered.map(x => parseInt(x) || 0);
+    collected = collected.map(x => parseInt(x) || 0);
+
+    console.log("Labels:", labels);
+    console.log("Delivered:", delivered);
+    console.log("Collected:", collected);
+
+    // 🛑 If no data → show dummy chart
+    if (labels.length === 0) {
+        labels = ["No Data"];
+        delivered = [0];
+        collected = [0];
+    }
+
+    const maxValue = Math.max(...delivered, ...collected, 10);
+
+    const ctx = document.getElementById('deliveryChart');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Delivered',
+                    data: delivered,
+                    backgroundColor: '#2563eb'
+                },
+                {
+                    label: 'Collected',
+                    data: collected,
+                    backgroundColor: '#16a34a'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    min: 0,
+                    max: maxValue + 10,
+                    ticks: {
+                        stepSize: 10,
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+
+});
+</script>
+
+<!-- Export -->
+<div class="export-section">
+    <a href="{% url 'bottles:export_report_pdf' %}" class="btn-danger">
+        📄 Export PDF
+    </a>
+    <a href="{% url 'bottles:export_report_excel' %}" class="btn-success">
+        📊 Export Excel
+    </a>
+</div>
+
+<!-- Table -->
+<div class="table-container">
+
+<table class="report-table">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Delivered</th>
+            <th>Collected</th>
+            <th>Breakage</th>
+            <th>Score</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for item in report %}
+        <tr>
+            <td>
+                <a href="{% url 'bottles:delivery_user_report' item.user.id %}" class="user-link">
+                    {{ item.user.username }}
+                </a>
+            </td>
+            <td>{{ item.delivered }}</td>
+            <td>{{ item.collected }}</td>
+            <td>{{ item.breakage }}</td>
+            <td><strong>{{ item.score }}</strong></td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="5">No data available</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+</div>
+
+{% endblock %}

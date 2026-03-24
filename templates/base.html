@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>The Farming Buddha Inventory</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+
+<body>
+
+<!-- Navbar -->
+<header class="navbar">
+
+    <!-- Left -->
+    <div class="nav-left">
+
+        <div class="logo-bar"></div>
+
+        <h2 class="app-title">
+            The Farming Buddha Inventory
+        </h2>
+
+    </div>
+
+    <!-- Right -->
+    {% if 'dashboard' in request.path %}
+    <div class="nav-right">
+
+        <!-- Reports -->
+        <a href="{% url 'bottles:reports_dashboard' %}" class="btn-dark">
+            📊 Reports
+        </a>
+
+        <!-- Alerts -->
+        <a href="{% url 'bottles:alert_history' %}" class="btn-warning alert-btn">
+
+            🔔 Alerts
+
+            {% if alert_count > 0 %}
+            <span class="alert-badge">
+                {{ alert_count }}
+            </span>
+            {% endif %}
+
+        </a>
+
+    </div>
+    {% endif %}
+
+</header>
+
+<!-- Main Content -->
+<main class="main-container">
+    {% block content %}
+    {% endblock %}
+</main>
+
+</body>
+</html>

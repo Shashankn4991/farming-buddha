@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #fefce8, #ffffff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .login-box {
+            background: white;
+            padding: 45px;
+            width: 100%;
+            max-width: 380px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            text-align: center;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .logo-bar {
+            width: 50px;
+            height: 6px;
+            background: #facc15;
+            margin: 0 auto 20px auto;
+            border-radius: 4px;
+        }
+
+        h2 {
+            margin-bottom: 25px;
+            color: #1f2937;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .error-box {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            margin-bottom: 18px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #facc15;
+            box-shadow: 0 0 0 3px rgba(250,204,21,0.15);
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* 🔐 Remember Me */
+        .remember-me {
+            display: flex;
+            align-items: center;
+            justify-content: left;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .remember-me input {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            background: #facc15;
+            color: #1f2937;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        button:hover {
+            background: #eab308;
+        }
+
+        /* ⏳ Spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1f2937;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 30px 20px;
+                border-radius: 14px;
+            }
+
+            h2 {
+                font-size: 22px;
+            }
+
+            .subtitle {
+                font-size: 13px;
+            }
+
+            button {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-box">
+
+    <div class="logo-bar"></div>
+
+    <h2>The Farming Buddha Login</h2>
+
+    <div class="subtitle">
+        Bottle Inventory Management System
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="error-box">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" onsubmit="showLoading()">
+        {% csrf_token %}
+
+        <input type="text" name="username" placeholder="Username" required>
+
+        <div class="password-wrapper">
+            <input type="password" name="password" id="password" placeholder="Password" required>
+            <span class="toggle-password" onclick="togglePassword()">👁️</span>
+        </div>
+
+        <!-- 🔐 Remember Me -->
+        <div class="remember-me">
+            <input type="checkbox" name="remember_me">
+            <label>Remember me</label>
+        </div>
+
+        <button type="submit" id="loginBtn">
+            Login
+        </button>
+    </form>
+
+</div>
+
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById("password");
+        passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+    }
+
+    function showLoading() {
+        const btn = document.getElementById("loginBtn");
+        btn.innerHTML = '<div class="spinner"></div>';
+        btn.disabled = true;
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+    font-family: Arial;
+    padding: 20px;
+}
+
+h2 {
+    text-align: center;
+}
+
+.summary {
+    margin: 20px 0;
+}
+
+.summary div {
+    margin-bottom: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th {
+    background: #333;
+    color: white;
+    padding: 8px;
+}
+
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<h2>{{ user.username }} Performance Report</h2>
+
+<div class="summary">
+    <div>Delivered: {{ delivered }}</div>
+    <div>Collected: {{ collected }}</div>
+    <div>Breakage: {{ breakage }}</div>
+    <div>Score: {{ score }}</div>
+    <div>Status: {{ badge }}</div>
+</div>
+
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Bottle Type</th>
+        <th>Delivered</th>
+        <th>Collected</th>
+        <th>Breakage</th>
+    </tr>
+
+    {% for item in items %}
+    <tr>
+        <td>{{ item.entry.assignment.date }}</td>
+        <td>{{ item.bottle_type.name }}</td>
+        <td>{{ item.delivered }}</td>
+        <td>{{ item.collected }}</td>
+        <td>{{ item.breakage }}</td>
+    </tr>
+    {% endfor %}
+
+</table>
+
+</body>
+</html>

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="supervisor-page">
+
+    <!-- Header -->
+    <div class="supervisor-header">
+
+        <h2>📋 Pending Delivery Approvals</h2>
+
+      <a href="{% url 'bottles:assign_delivery' %}" class="btn-warning">
+    + Create Assignment
+</a>
+
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+
+        <table class="report-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Date</th>
+                    <th>Bottle</th>
+                    <th>Assigned</th>
+                    <th>Delivered</th>
+                    <th>Collected</th>
+                    <th>Breakage</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for entry in pending_entries %}
+                {% for item in entry.items.all %}
+                <tr>
+
+                    <td>{{ entry.id }}</td>
+                    <td>{{ entry.submitted_by.username }}</td>
+                    <td>{{ entry.assignment.date }}</td>
+                    <td>{{ item.bottle_type.name }}</td>
+
+                    <td>
+                        {% for assigned in entry.assignment.items.all %}
+                            {% if assigned.bottle_type == item.bottle_type %}
+                                {{ assigned.quantity_assigned }}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+
+                    <td>{{ item.delivered }}</td>
+                    <td>{{ item.collected }}</td>
+                    <td>{{ item.breakage }}</td>
+
+                    <td>
+                        {% if entry.status == "PENDING" %}
+                            <span class="status pending">Pending</span>
+                        {% elif entry.status == "APPROVED" %}
+                            <span class="status approved">Approved</span>
+                        {% else %}
+                            <span class="status rejected">Rejected</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+
+                        {% if entry.status == "PENDING" %}
+
+                            <a href="{% url 'bottles:approve_entry' entry.id %}" class="action approve">
+    ✔
+</a>
+
+<a href="{% url 'bottles:reject_entry' entry.id %}" class="action reject">
+    ✖
+</a>
+
+                        {% else %}
+                            <span class="locked">Locked</span>
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+                {% endfor %}
+            {% empty %}
+                <tr>
+                    <td colspan="10" class="empty-row">
+                        No pending delivery entries.
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

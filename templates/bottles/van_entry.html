@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+
+<div style="
+    max-width:900px;
+    margin:20px auto;
+    background:#ffffff;
+    padding:20px;
+    border-radius:16px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.08);
+">
+
+    <!-- Header -->
+    <div style="margin-bottom:20px; border-bottom:1px solid #e5e7eb; padding-bottom:10px;">
+        <h2 style="margin:0; font-size:22px; font-weight:700; color:#1f2937;">
+            Van Driver Entry
+        </h2>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div style="
+                background:#fee2e2;
+                color:#991b1b;
+                padding:10px;
+                margin-bottom:12px;
+                border-radius:10px;
+                font-weight:600;
+                font-size:14px;
+            ">
+                {{ message|linebreaks }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Date + Driver -->
+        <div style="margin-bottom:20px;">
+            {{ form.as_p }}
+        </div>
+
+        {% for bottle in bottle_types %}
+        <div style="
+            background:#f9fafb;
+            padding:16px;
+            margin-bottom:18px;
+            border-radius:12px;
+            border:1px solid #e5e7eb;
+        ">
+
+            <!-- Bottle Title -->
+            <h4 style="
+                margin-bottom:12px;
+                font-size:17px;
+                font-weight:600;
+                color:#111827;
+            ">
+                {{ bottle.name }}
+            </h4>
+
+            <!-- 🔽 UNLOADING -->
+            <div style="
+                background:#fff7ed;
+                padding:12px;
+                border-radius:10px;
+                margin-bottom:12px;
+                border-left:4px solid #facc15;
+            ">
+                <h5 style="margin-bottom:8px; font-size:14px; font-weight:700;">
+                    🔽 Unloading (Return)
+                </h5>
+
+                <div style="
+                    display:grid;
+                    grid-template-columns:1fr;
+                    gap:10px;
+                ">
+
+                    <div>
+                        <label style="font-size:13px; font-weight:600;">
+                            Empty Sent To Farm
+                        </label>
+                        <input type="number"
+                               name="empty_{{ bottle.id }}"
+                               min="0"
+                               value="0"
+                               style="
+                                    width:100%;
+                                    padding:8px;
+                                    border-radius:8px;
+                                    border:1px solid #d1d5db;
+                               ">
+                    </div>
+
+                    <div>
+                        <label style="font-size:13px; font-weight:600;">
+                            Breakage
+                        </label>
+                        <input type="number"
+                               name="breakage_{{ bottle.id }}"
+                               min="0"
+                               value="0"
+                               style="
+                                    width:100%;
+                                    padding:8px;
+                                    border-radius:8px;
+                                    border:1px solid #d1d5db;
+                               ">
+                    </div>
+
+                    <div>
+                        <label style="font-size:13px; font-weight:600;">
+                            Reason
+                        </label>
+                        <select name="reason_{{ bottle.id }}"
+                                style="
+                                    width:100%;
+                                    padding:8px;
+                                    border-radius:8px;
+                                    border:1px solid #d1d5db;
+                                ">
+                            <option value="">---------</option>
+                            <option value="TRANSPORT">Transport Damage</option>
+                            <option value="HANDLING">Handling Mistake</option>
+                            <option value="ACCIDENT">Vehicle Accident</option>
+                            <option value="RETURN_DAMAGE">Customer Return Damage</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 🔼 LOADING -->
+            <div style="
+                background:#fefce8;
+                padding:12px;
+                border-radius:10px;
+                border-left:4px solid #facc15;
+            ">
+                <h5 style="margin-bottom:8px; font-size:14px; font-weight:700;">
+                    🔼 Loading (Delivery)
+                </h5>
+
+                <div>
+                    <label style="font-size:13px; font-weight:600;">
+                        Filled Received From Farm
+                    </label>
+
+                    <!-- ✅ AUTO-FILL -->
+                <input type="number"
+                        name="filled_received"
+                        value="{{ item.default_quantity|default:0 }}"
+                        min="0"
+                        class="input-number"
+                        style="
+                            width:100%;
+                            padding:8px;
+                            border-radius:8px;
+                            border:1px solid #d1d5db;
+                            background:#e5e7eb;
+                            font-weight:600;
+                            color:#374151;
+                        ">
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+
+        <!-- Submit -->
+        <button type="submit"
+                style="
+                    width:100%;
+                    background:#facc15;
+                    color:#1f2937;
+                    padding:12px;
+                    border:none;
+                    border-radius:10px;
+                    font-size:14px;
+                    font-weight:700;
+                    cursor:pointer;
+                ">
+            Save Van Entry
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

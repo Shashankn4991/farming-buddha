@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div style="
+    max-width:1000px;
+    margin:20px auto;
+    background:white;
+    padding:20px;
+    border-radius:16px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.08);
+">
+
+    <!-- Header -->
+    <div style="margin-bottom:20px;border-bottom:1px solid #e5e7eb;padding-bottom:10px;">
+        <h2 style="margin:0;font-size:24px;color:#1f2937;font-weight:700;">
+            Warehouse Entry
+        </h2>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div style="
+                background:#fff7ed;
+                color:#92400e;
+                padding:12px;
+                margin-bottom:15px;
+                border-radius:10px;
+                font-weight:600;
+                border:1px solid #fcd34d;
+            ">
+                {{ message|linebreaks }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- ================= INWARD ================= -->
+    <form method="post" style="margin-bottom:30px;">
+        {% csrf_token %}
+        <input type="hidden" name="entry_type" value="INWARD">
+
+        <h3 style="margin-bottom:15px;color:#facc15;font-size:18px;">
+            📥 Inward (Morning)
+        </h3>
+
+        <input type="date" name="date" value="{{ today|date:'Y-m-d' }}" required
+               style="
+                   margin-bottom:15px;
+                   padding:10px;
+                   border-radius:8px;
+                   border:1px solid #d1d5db;
+                   width:100%;
+               ">
+
+        {% for bottle in bottle_types %}
+        <div style="
+            background:#f9fafb;
+            padding:15px;
+            margin-bottom:15px;
+            border-radius:12px;
+            border-left:5px solid #facc15;
+        ">
+
+            <h4 style="margin-bottom:10px;">{{ bottle.name }}</h4>
+
+            <div style="
+                display:grid;
+                grid-template-columns:1fr;
+                gap:12px;
+            ">
+
+                <div>
+                    <label>Received From Farm</label>
+                    <input type="number" name="received_{{ bottle.id }}" min="0" value="0"
+                           style="width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;">
+                </div>
+
+                <div>
+                    <label>Breakage</label>
+                    <input type="number"
+                           name="breakage_{{ bottle.id }}"
+                           min="0"
+                           value="0"
+                           oninput="toggleReason('inward_{{ bottle.id }}', this.value)"
+                           style="width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;">
+                </div>
+
+                <div id="reason_box_inward_{{ bottle.id }}" style="display:none;">
+                    <label>Breakage Reason</label>
+                    <select name="reason_{{ bottle.id }}"
+                            style="width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;">
+                        <option value="">---------</option>
+                        <option value="TRANSPORT">Transport</option>
+                        <option value="HANDLING">Handling</option>
+                        <option value="DAMAGE">Damage</option>
+                    </select>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+
+        <button type="submit"
+                name="entry_type"
+                value="INWARD"
+                onclick="this.disabled=true; this.form.submit();"
+                style="
+                    width:100%;
+                    background:#facc15;
+                    color:#1f2937;
+                    padding:12px;
+                    border:none;
+                    border-radius:10px;
+                    font-weight:600;
+                ">
+            Save Inward Entry
+        </button>
+    </form>
+
+    <!-- ================= OUTWARD ================= -->
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="entry_type" value="OUTWARD">
+
+        <h3 style="margin-bottom:15px;color:#facc15;font-size:18px;">
+            📤 Outward (Evening)
+        </h3>
+
+        <input type="date" name="date" value="{{ today|date:'Y-m-d' }}" required
+               style="
+                   margin-bottom:15px;
+                   padding:10px;
+                   border-radius:8px;
+                   border:1px solid #d1d5db;
+                   width:100%;
+               ">
+
+        {% for bottle in bottle_types %}
+        <div style="
+            background:#f9fafb;
+            padding:15px;
+            margin-bottom:15px;
+            border-radius:12px;
+            border-left:5px solid #facc15;
+        ">
+
+            <h4 style="margin-bottom:10px;">{{ bottle.name }}</h4>
+
+            <div style="
+                display:grid;
+                grid-template-columns:1fr;
+                gap:12px;
+            ">
+
+                <div>
+                    <label>Empty Received From Delivery</label>
+                    <input type="number" name="empty_delivery_{{ bottle.id }}" min="0" value="0"
+                           style="width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;">
+                </div>
+
+                <div>
+                    <label>Breakage</label>
+                    <input type="number"
+                           name="breakage_{{ bottle.id }}"
+                           min="0"
+                           value="0"
+                           oninput="toggleReason('outward_{{ bottle.id }}', this.value)"
+                           style="width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;">
+                </div>
+
+                <div id="reason_box_outward_{{ bottle.id }}" style="display:none;">
+                    <label>Breakage Reason</label>
+                    <select name="reason_{{ bottle.id }}"
+                            style="width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;">
+                        <option value="">---------</option>
+                        <option value="HANDLING">Handling</option>
+                        <option value="DAMAGE">Damage</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Empty Sent To Farm</label>
+                    <input type="number" name="empty_farm_{{ bottle.id }}" min="0" value="0"
+                           style="width:100%;padding:10px;border-radius:8px;border:1px solid #d1d5db;">
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+
+        <button type="submit"
+                name="entry_type"
+                value="OUTWARD"
+                onclick="this.disabled=true; this.form.submit();"
+                style="
+                    width:100%;
+                    background:#facc15;
+                    color:#1f2937;
+                    padding:12px;
+                    border:none;
+                    border-radius:10px;
+                    font-weight:600;
+                ">
+            Save Outward Entry
+        </button>
+    </form>
+
+</div>
+
+<!-- JS -->
+<script>
+function toggleReason(id, value) {
+    let box = document.getElementById("reason_box_" + id);
+    if (value > 0) {
+        box.style.display = "block";
+    } else {
+        box.style.display = "none";
+    }
+}
+</script>
+
+{% endblock %}
