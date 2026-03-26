@@ -19,9 +19,6 @@ DEBUG = False
 ALLOWED_HOSTS = ['*']  # change later to your domain
 
 
-# ------------------------------
-# INSTALLED APPS
-# ------------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -31,7 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'accounts',
-    'bottles',
+    'bottles.apps.BottlesConfig',
     'dashboard',
 ]
 
@@ -152,17 +149,3 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'role_redirect'
 LOGOUT_REDIRECT_URL = 'login'
 
-
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
-try:
-    user = User.objects.get(username='admin')  # or your username
-    user.set_password('admin123')
-    user.is_staff = True
-    user.is_superuser = True
-    user.save()
-    print("✅ Password reset for admin")
-except User.DoesNotExist:
-    print("❌ User not found")
