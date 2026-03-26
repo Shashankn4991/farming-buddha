@@ -151,3 +151,18 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'role_redirect'
 LOGOUT_REDIRECT_URL = 'login'
+
+
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+try:
+    user = User.objects.get(username='admin')  # or your username
+    user.set_password('admin123')
+    user.is_staff = True
+    user.is_superuser = True
+    user.save()
+    print("✅ Password reset for admin")
+except User.DoesNotExist:
+    print("❌ User not found")
