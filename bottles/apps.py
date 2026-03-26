@@ -12,18 +12,21 @@ class BottlesConfig(AppConfig):
             from django.contrib.auth import get_user_model
             User = get_user_model()
 
-            # Reset password for shashank
-            user = User.objects.get(username='shashankn')
-            user.set_password('1234')
-            user.is_staff = True
-            user.is_superuser = True
-            user.save()
+            if not User.objects.filter(username='shashankn').exists():
+                User.objects.create_superuser(
+                    username='shashankn',
+                    email='admin@example.com',
+                    password='1234'
+                )
+                print("✅ Superuser CREATED: shashankn")
 
-            print("✅ Password reset for shashank")
-
-        except User.DoesNotExist:
-            print("❌ User not found")
+            else:
+                user = User.objects.get(username='shashankn')
+                user.set_password('1234')
+                user.is_staff = True
+                user.is_superuser = True
+                user.save()
+                print("✅ Password reset for shashankn")
 
         except (OperationalError, ProgrammingError):
-            # DB not ready yet
             pass
