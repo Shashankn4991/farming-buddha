@@ -13,7 +13,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.http import HttpResponse
 
-from openpyxl import Workbook
+
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
@@ -920,7 +920,7 @@ from django.shortcuts import get_object_or_404, render
 from django.core.exceptions import PermissionDenied
 from django.db.models import Sum
 
-from openpyxl import Workbook
+
 
 from .decorators import role_required
 from .models import DeliveryEntryItem
