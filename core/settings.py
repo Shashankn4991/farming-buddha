@@ -79,15 +79,17 @@ TEMPLATES = [
 
 
 # ------------------------------
-# DATABASE (SQLite for now)
+# DATABASE (post for now)
 # ------------------------------
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+import dj_database_url
 
+DATABASES = {
+    'default': dj_database_url.config(
+        default=None,
+        conn_max_age=600,
+        ssl_require=True
+    )
+}
 
 # ------------------------------
 # PASSWORD VALIDATION
