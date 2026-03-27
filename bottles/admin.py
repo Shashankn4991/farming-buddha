@@ -123,3 +123,9 @@ from .models import OpeningStock
 @admin.register(OpeningStock)
 class OpeningStockAdmin(admin.ModelAdmin):
     list_display = ['date', 'bottle_type', 'farm_stock', 'warehouse_stock', 'customer_stock']
+    
+    
+    
+from .models import OpeningOutstanding
+
+admin.site.register(OpeningOutstanding)

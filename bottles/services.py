@@ -199,34 +199,59 @@ def get_stock_summary():
 # -------------------------------------------------
 # ROUTE OUTSTANDING
 # -------------------------------------------------
+from django.db.models import Sum
+from .models import OpeningOutstanding, BottleType
 
 def get_route_outstanding():
     results = []
 
     delivery_users = User.objects.filter(role="DELIVERY")
+    bottle_types = BottleType.objects.all()
 
     for user in delivery_users:
+        total_delivered = 0
+        total_collected = 0
+        total_breakage = 0
+        total_opening = 0
+
         entries = DeliveryEntry.objects.filter(submitted_by=user)
 
-        delivered = DeliveryEntryItem.objects.filter(
-            entry__in=entries
-        ).aggregate(total=Sum("delivered"))["total"] or 0
+        for bottle in bottle_types:
 
-        collected = DeliveryEntryItem.objects.filter(
-            entry__in=entries
-        ).aggregate(total=Sum("collected"))["total"] or 0
+            delivered = DeliveryEntryItem.objects.filter(
+                entry__in=entries,
+                bottle_type=bottle
+            ).aggregate(total=Sum("delivered"))["total"] or 0
 
-        breakage = DeliveryEntryItem.objects.filter(
-            entry__in=entries
-        ).aggregate(total=Sum("breakage"))["total"] or 0
+            collected = DeliveryEntryItem.objects.filter(
+                entry__in=entries,
+                bottle_type=bottle
+            ).aggregate(total=Sum("collected"))["total"] or 0
 
-        outstanding = delivered - (collected + breakage)
+            breakage = DeliveryEntryItem.objects.filter(
+                entry__in=entries,
+                bottle_type=bottle
+            ).aggregate(total=Sum("breakage"))["total"] or 0
+
+            opening = OpeningOutstanding.objects.filter(
+                driver=user,
+                bottle_type=bottle
+            ).aggregate(total=Sum("quantity"))["total"] or 0
+
+            # accumulate totals
+            total_delivered += delivered
+            total_collected += collected
+            total_breakage += breakage
+            total_opening += opening
+
+        outstanding = total_opening + total_delivered - (total_collected + total_breakage)
 
         results.append({
-            "delivery_user": user,  # ✅ FIXED
-            "delivered": delivered,
-            "collected": collected,
-            "breakage": breakage,
+            "delivery_user": user,
+            "delivered": total_delivered,
+            "collected": total_collected,
+            "breakage": total_breakage,
+            "opening": total_opening,  # optional debug
             "outstanding": outstanding,
         })
 

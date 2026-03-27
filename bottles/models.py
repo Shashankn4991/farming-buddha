@@ -686,3 +686,26 @@ class OpeningStock(models.Model):
 
     def __str__(self):
         return f"{self.date} - {self.bottle_type}"
+    
+    
+    
+    
+    
+    
+class OpeningOutstanding(models.Model):
+    date = models.DateField()
+
+    driver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    bottle_type = models.ForeignKey(
+        BottleType,
+        on_delete=models.CASCADE
+    )
+
+    quantity = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.date} - {self.driver} - {self.bottle_type} - {self.quantity}"
