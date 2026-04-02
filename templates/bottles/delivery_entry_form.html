@@ -31,17 +31,18 @@
                         <tr>
 
                             <!-- Bottle Name -->
-<td data-outstanding="{{ item.outstanding }}">
-    {{ item.bottle_type.name }}
-    <br>
-    <small style="color: gray;">
-        Outstanding: {{ item.outstanding }}
-    </small>
-</td>
+                            <td>
+                                {{ item.bottle_type.name }}
+                                <br>
+                                <small style="color: gray;">
+                                    Outstanding: {{ item.outstanding }}
+                                </small>
+                            </td>
+
                             <!-- Delivered -->
                             <td>
                                 <input type="number"
-                                       name="delivered"
+                                       name="delivered_{{ item.bottle_type.id }}"
                                        value="{{ item.quantity_assigned }}"
                                        min="0"
                                        class="input-number delivered">
@@ -50,7 +51,7 @@
                             <!-- Collected -->
                             <td>
                                 <input type="number"
-                                       name="collected"
+                                       name="collected_{{ item.bottle_type.id }}"
                                        value="0"
                                        min="0"
                                        class="input-number collected">
@@ -59,7 +60,7 @@
                             <!-- Breakage -->
                             <td>
                                 <input type="number"
-                                       name="breakage"
+                                       name="breakage_{{ item.bottle_type.id }}"
                                        value="0"
                                        min="0"
                                        class="input-number breakage">
@@ -81,7 +82,7 @@
 
             <!-- Error -->
             <div id="errorBox" class="error-box hidden">
-                Collected + Breakage cannot exceed Delivered
+                Please check values entered
             </div>
 
         </div>
@@ -98,11 +99,8 @@
 <!-- JS -->
 <script>
 const rows = document.querySelectorAll("tbody tr");
-const errorBox = document.getElementById("errorBox");
-const submitBtn = document.getElementById("submitBtn");
 
-function updateValidation() {
-    let hasError = false;
+function updateSummary() {
 
     let totalDelivered = 0;
     let totalCollected = 0;
@@ -110,55 +108,28 @@ function updateValidation() {
 
     rows.forEach(row => {
 
-        const deliveredInput = row.querySelector(".delivered");
-        const collectedInput = row.querySelector(".collected");
-        const breakageInput = row.querySelector(".breakage");
-
-        const delivered = parseInt(deliveredInput.value) || 0;
-        let collected = parseInt(collectedInput.value) || 0;
-        const breakage = parseInt(breakageInput.value) || 0;
-
-        const outstanding = parseInt(row.querySelector("td").dataset.outstanding) || 0;
+        const delivered = parseInt(row.querySelector(".delivered").value) || 0;
+        const collected = parseInt(row.querySelector(".collected").value) || 0;
+        const breakage = parseInt(row.querySelector(".breakage").value) || 0;
 
         totalDelivered += delivered;
         totalCollected += collected;
         totalBreakage += breakage;
 
-        // 🔥 AUTO LIMIT COLLECTION
-        if (collected > outstanding && outstanding > 0) {
-            collected = outstanding;
-            collectedInput.value = outstanding;
-        }
-
-        // Highlight row if needed
-        if (collected > outstanding && outstanding > 0) {
-            hasError = true;
-            row.style.background = "#fee2e2";
-        } else {
-            row.style.background = "";
-        }
     });
 
     document.getElementById("totalDelivered").innerText = totalDelivered;
     document.getElementById("totalCollected").innerText = totalCollected;
     document.getElementById("totalBreakage").innerText = totalBreakage;
-
-    if (hasError) {
-        errorBox.classList.remove("hidden");
-        submitBtn.disabled = true;
-    } else {
-        errorBox.classList.add("hidden");
-        submitBtn.disabled = false;
-    }
 }
 
 // Attach event listeners
 document.querySelectorAll("input").forEach(input => {
-    input.addEventListener("input", updateValidation);
+    input.addEventListener("input", updateSummary);
 });
 
 // Initial calculation
-updateValidation();
+updateSummary();
 </script>
 
 {% endblock %}

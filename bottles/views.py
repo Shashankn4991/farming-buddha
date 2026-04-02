@@ -116,16 +116,10 @@ def delivery_entry(request):
 
     bottle_items = list(assignment.items.all())
 
+    # =================================================
+    # ✅ POST HANDLING (FIXED INDENTATION)
+    # =================================================
     if request.method == "POST":
-
-        delivered_list = request.POST.getlist("delivered")
-        collected_list = request.POST.getlist("collected")
-        breakage_list = request.POST.getlist("breakage")
-
-        # ✅ Length safety check
-        if not (len(delivered_list) == len(bottle_items) == len(collected_list) == len(breakage_list)):
-            messages.error(request, "Invalid form submission. Please try again.")
-            return redirect("bottles:delivery_entry")
 
         try:
             with transaction.atomic():
@@ -136,16 +130,14 @@ def delivery_entry(request):
                     status="PENDING"
                 )
 
-                # 🔥 LOOP THROUGH ITEMS
-                for i, assigned_item in enumerate(bottle_items):
+                for assigned_item in bottle_items:
 
-                    # ✅ Safe parsing
-                    try:
-                        delivered_qty = int(delivered_list[i] or 0)
-                        collected_qty = int(collected_list[i] or 0)
-                        breakage_qty = int(breakage_list[i] or 0)
-                    except ValueError:
-                        raise ValidationError("Invalid number input")
+                    bottle_id = assigned_item.bottle_type.id
+
+                    # ✅ Read correct values from POST
+                    delivered_qty = int(request.POST.get(f"delivered_{bottle_id}", 0))
+                    collected_qty = int(request.POST.get(f"collected_{bottle_id}", 0))
+                    breakage_qty = int(request.POST.get(f"breakage_{bottle_id}", 0))
 
                     # ✅ Validation 1: Delivered ≤ Assigned
                     if delivered_qty > assigned_item.quantity_assigned:
@@ -159,21 +151,7 @@ def delivery_entry(request):
                             f"{assigned_item.bottle_type.name}: Negative values not allowed"
                         )
 
-                    # ✅ Validation 3: Collected ≤ Customer Outstanding
-                    outstanding = get_customer_outstanding(assigned_item.bottle_type)
-
-                    if collected_qty > outstanding:
-                        raise ValidationError(
-                            f"{assigned_item.bottle_type.name}: Cannot collect more than outstanding ({outstanding})"
-                        )
-
-                    # (Optional) Breakage sanity check
-                    if breakage_qty > (delivered_qty + collected_qty):
-                        raise ValidationError(
-                            f"{assigned_item.bottle_type.name}: Breakage too high"
-                        )
-
-                    # ✅ Save item
+                    # ✅ Save item (MODEL handles advanced validation)
                     DeliveryEntryItem.objects.create(
                         entry=entry,
                         bottle_type=assigned_item.bottle_type,
@@ -191,7 +169,11 @@ def delivery_entry(request):
         except Exception:
             messages.error(request, "Something went wrong. Please try again.")
 
-    # ✅ Outstanding for display
+    # =================================================
+    # ✅ GET (FORM DISPLAY)
+    # =================================================
+
+    # Outstanding for display (temporary - we will improve later)
     for item in bottle_items:
         item.outstanding = get_customer_outstanding(item.bottle_type)
 
