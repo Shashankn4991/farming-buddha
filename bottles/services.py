@@ -196,11 +196,11 @@ def get_stock_summary():
 
     return summary
 
-# -------------------------------------------------
-# ROUTE OUTSTANDING
-# -------------------------------------------------
 from django.db.models import Sum
-from .models import OpeningOutstanding, BottleType
+from .models import OpeningOutstanding, BottleType, DeliveryEntry, DeliveryEntryItem
+from django.contrib.auth import get_user_model
+User = get_user_model()  # adjust if your User model path is different
+
 
 def get_route_outstanding():
     results = []
@@ -209,13 +209,11 @@ def get_route_outstanding():
     bottle_types = BottleType.objects.all()
 
     for user in delivery_users:
-        total_delivered = 0
-        total_collected = 0
-        total_breakage = 0
-        total_opening = 0
+        bottle_summary = {}
 
         entries = DeliveryEntry.objects.filter(submitted_by=user)
-
+        
+        
         for bottle in bottle_types:
 
             delivered = DeliveryEntryItem.objects.filter(
@@ -238,21 +236,35 @@ def get_route_outstanding():
                 bottle_type=bottle
             ).aggregate(total=Sum("quantity"))["total"] or 0
 
-            # accumulate totals
-            total_delivered += delivered
-            total_collected += collected
-            total_breakage += breakage
-            total_opening += opening
+            outstanding = opening + delivered - (collected + breakage)
 
-        outstanding = total_opening + total_delivered - (total_collected + total_breakage)
+            # ✅ FIX: clean key mapping
+            if "1" in bottle.name:
+                key = "1L"
+            else:
+                key = "500ML"
+
+            bottle_summary[key] = {
+                "delivered": delivered,
+                "collected": collected,
+                "breakage": breakage,
+                "opening": opening,
+                "outstanding": outstanding,
+            }
+
+        # ✅ totals (for alert logic)
+        total_delivered = sum(b["delivered"] for b in bottle_summary.values())
+        total_collected = sum(b["collected"] for b in bottle_summary.values())
+        total_breakage = sum(b["breakage"] for b in bottle_summary.values())
+        total_outstanding = sum(b["outstanding"] for b in bottle_summary.values())
 
         results.append({
             "delivery_user": user,
+            "bottle_data": bottle_summary,
             "delivered": total_delivered,
             "collected": total_collected,
             "breakage": total_breakage,
-            "opening": total_opening,  # optional debug
-            "outstanding": outstanding,
+            "outstanding": total_outstanding,
         })
 
     return results

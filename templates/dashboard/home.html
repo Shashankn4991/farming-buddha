@@ -81,19 +81,35 @@
             {{ route.delivery_user.route_name }}
         </p>
 
-        <p>Total Delivered: {{ route.delivered }}</p>
-        <p>Total Collected: {{ route.collected }}</p>
-        <p>Breakage: {{ route.breakage }}</p>
+        <!-- Delivered -->
+        <p><strong>Total Delivered:</strong></p>
+        <p>1L: {{ route.bottle_data.1L.delivered|default:0 }}</p>
+        <p>0.5L: {{ route.bottle_data.500ML.delivered|default:0 }}</p>
+
+        <!-- Collected -->
+        <p><strong>Total Collected:</strong></p>
+        <p>1L: {{ route.bottle_data.1L.collected|default:0 }}</p>
+        <p>0.5L: {{ route.bottle_data.500ML.collected|default:0 }}</p>
+
+        <!-- Breakage -->
+        <p><strong>Breakage:</strong></p>
+        <p>1L: {{ route.bottle_data.1L.breakage|default:0 }}</p>
+        <p>0.5L: {{ route.bottle_data.500ML.breakage|default:0 }}</p>
 
         <hr>
 
+        <!-- Outstanding -->
         {% if route.outstanding > 0 %}
             <p class="danger">
-                Outstanding: {{ route.outstanding }} ⚠
+                <strong>Outstanding:</strong><br>
+                1L: {{ route.bottle_data.1L.outstanding|default:0 }}<br>
+                0.5L: {{ route.bottle_data.500ML.outstanding|default:0 }} ⚠
             </p>
         {% else %}
             <p class="success">
-                Outstanding: {{ route.outstanding }}
+                <strong>Outstanding:</strong><br>
+                1L: {{ route.bottle_data.1L.outstanding|default:0 }}<br>
+                0.5L: {{ route.bottle_data.500ML.outstanding|default:0 }}
             </p>
         {% endif %}
 
