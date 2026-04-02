@@ -311,9 +311,10 @@ class DeliveryEntry(models.Model):
 
 
 
-# ------------------------------
-# Delivery Entry Item
-# ------------------------------
+from django.db import models
+from django.core.exceptions import ValidationError
+from django.db.models import Sum
+
 
 class DeliveryEntryItem(models.Model):
 
@@ -346,7 +347,7 @@ class DeliveryEntryItem(models.Model):
             assignment_item = self.entry.assignment.items.get(
                 bottle_type=self.bottle_type
             )
-        except DeliveryAssignmentItem.DoesNotExist:
+        except Exception:
             raise ValidationError(
                 f"No assignment found for {self.bottle_type.name}"
             )
@@ -358,21 +359,39 @@ class DeliveryEntryItem(models.Model):
             )
 
         # ------------------------------
-        # Rule 2: Collected ≤ Customer Outstanding
+        # Rule 2: Collected ≤ Delivered + Outstanding
         # ------------------------------
-        from bottles.services import get_customer_outstanding
+        from bottles.models import OpeningOutstanding
 
-        outstanding = get_customer_outstanding(self.bottle_type)
+        # 🔥 IMPORTANT: use correct field
+        driver = getattr(self.entry, "driver", None) or getattr(self.entry, "submitted_by", None)
 
-        # Allow first-time entries (outstanding = 0)
-        if outstanding > 0 and self.collected > outstanding:
+        if not driver:
+            raise ValidationError("Driver not found for this entry.")
+
+        opening = OpeningOutstanding.objects.filter(
+            driver=driver,
+            bottle_type=self.bottle_type
+        ).aggregate(total=Sum("quantity"))["total"] or 0
+
+        max_allowed = self.delivered + opening
+
+        if self.collected > max_allowed:
             raise ValidationError(
                 f"{self.bottle_type.name}: Cannot collect {self.collected}. "
-                f"Only {outstanding} bottles are currently with customers."
+                f"Max allowed = Delivered ({self.delivered}) + Outstanding ({opening}) = {max_allowed}"
             )
 
         # ------------------------------
-        # Rule 3: No negative values
+        # Rule 3: Breakage ≤ Delivered
+        # ------------------------------
+        if self.breakage > self.delivered:
+            raise ValidationError(
+                f"{self.bottle_type.name}: Breakage ({self.breakage}) cannot exceed delivered ({self.delivered})"
+            )
+
+        # ------------------------------
+        # Rule 4: No negative values
         # ------------------------------
         if self.delivered < 0 or self.collected < 0 or self.breakage < 0:
             raise ValidationError("Values cannot be negative")
